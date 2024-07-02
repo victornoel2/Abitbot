@@ -1,7 +1,7 @@
 import os
 import discord
 import re
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 
 # Charge les variables du .env
 load_dotenv()
