@@ -1,7 +1,13 @@
+import os
 import discord
 import re
+from dotenv import load_dotenv, dotenv_values
 
-TOKEN = 'Nzg1MTE3NzA4NzUxOTk0OTEy.GnGRc2.32BYSLv6I9S3yl7n62FGp7SOiiLl5QLZYIqurI'
+# Charge les variables du .env
+load_dotenv()
+
+# Récupère la variable
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents.all()
 intents.messages = True
