@@ -15,6 +15,8 @@ intents.messages = True
 
 bot = commands.Bot(command_prefix="!", intents=intents, max_messages=1000)
 
+channelGeneral = 0
+
 envoye = 0
 
 
@@ -22,8 +24,16 @@ envoye = 0
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user}')
+    for guild in bot.guilds:
+        await setChannelGeneral(guild.system_channel)
+
     await load_recent_messages()
     await bot.tree.sync()
+
+
+async def setChannelGeneral(channel):
+    global channelGeneral
+    channelGeneral = channel
 
 
 # Effectue la modification lorsqu'un message est envoyé
@@ -54,8 +64,12 @@ async def historique(interaction: discord.Interaction):
 # Analyse les 15 derniers messages et les traite
 async def analyze_last_messages_in_general():
     global envoye
+    global channelGeneral
+    print(channelGeneral)
+    #TODO je sais pas si le for sert à quelque chose pcq mon serv
+    # n'a qu'une guild (jsp ce que c'est) mais peut être qu'il le faut pour d'autres servs
     for guild in bot.guilds:
-        general_channel = discord.utils.get(guild.text_channels, name='le-général')
+        general_channel = channelGeneral
         if general_channel:
             try:
                 # Récupérer les 15 derniers messages du canal général
