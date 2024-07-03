@@ -3,6 +3,7 @@ import discord
 import re
 from dotenv import load_dotenv
 from discord.ext import commands
+from discord import app_commands
 
 # Charge les variables du .env
 load_dotenv()
@@ -18,6 +19,8 @@ bot = commands.Bot(command_prefix="!", intents=intents, max_messages=1000)
 channelGeneral = 0
 
 envoye = 0
+
+limit = 15
 
 
 # Au lancement du bot
@@ -52,20 +55,20 @@ async def on_message_edit(before, after):
     await replace_urls_in_message(after)
 
 
-@bot.tree.command(name="historique", description="Traite les 15 derniers messages du serveur")
-async def historique(interaction: discord.Interaction):
-    await interaction.response.send_message("Analyse des 15 derniers messages dans le canal général en cours...",
+@bot.tree.command(name="historique", description="Traite les derniers messages du serveur")
+@app_commands.describe(nombre="Nombre de messages à analyser (par défaut 15)")
+async def historique(interaction: discord.Interaction, nombre: int = 15):
+    await interaction.response.send_message(f"Analyse des {nombre} derniers messages dans le canal général en cours...",
                                             ephemeral=True)
-    await analyze_last_messages_in_general()
+    await analyze_last_messages_in_general(nombre)
     await interaction.followup.send("Analyse terminée.", ephemeral=True)
     await interaction.delete_original_response()
 
 
 # Analyse les 15 derniers messages et les traite
-async def analyze_last_messages_in_general():
+async def analyze_last_messages_in_general(limite=limit):
     global envoye
     global channelGeneral
-    print(channelGeneral)
     #TODO je sais pas si le for sert à quelque chose pcq mon serv
     # n'a qu'une guild (jsp ce que c'est) mais peut être qu'il le faut pour d'autres servs
     for guild in bot.guilds:
@@ -73,7 +76,7 @@ async def analyze_last_messages_in_general():
         if general_channel:
             try:
                 # Récupérer les 15 derniers messages du canal général
-                async for message in general_channel.history(limit=15):
+                async for message in general_channel.history(limit=limite):
                     envoye = 0
                     await replace_urls_in_message(message)
             except discord.Forbidden:
