@@ -1,7 +1,20 @@
 import os
-import discord
+import subprocess
+import sys
+try:
+    import discord
+except ModuleNotFoundError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "discord"])
+    import discord
+# import discord
 import re
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "python-dotenv"])
+    from dotenv import load_dotenv
+
 from discord.ext import commands
 from discord import app_commands
 
@@ -10,6 +23,9 @@ load_dotenv()
 
 # Récupère la variable
 TOKEN = os.getenv('DISCORD_TOKEN')
+
+if not TOKEN:
+    raise ValueError("Le token Discord est manquant. Ajoutez-le dans un fichier .env")
 
 intents = discord.Intents.all()
 intents.messages = True
