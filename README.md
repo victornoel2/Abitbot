@@ -22,3 +22,6 @@ Cela s'applique à l'envoi d'un message mais également à sa modification
 
 # Quelques fonctionnalités supplémentaires
 - Vous pouvez rajouter le nom du channel discord vers lequel vous voulez envoyer votre message après le lien du tweet et le bot utilisera ses jambes athlétiques pour vous l'amener là bas.
+- Vous pouvez également rajouter le mot clé "stop" pour interdire au bot de traiter votre lien
+- Utilisez la commande /historique pour que ce bon vieux Abitbot traite les 15 derniers messages envoyés dans le channel général.
+- Utilisez la commande /shutdown pour assassiner Abitbot..
