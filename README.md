@@ -2,6 +2,12 @@
 
 Bot discord permettant de changer l'URL twitter envoyée en une URL avec la bonne intégration discord. J'en avais marre de devoir modifier les url à la main dans mon serveur privé où j'envoie différentes ressources de différentes catégories.
 
+# Installation
+
+- Cloner le repo
+- Indiquer le token de votre bot dans le fichier .env (pour créer un bot discord rendez vous sur https://discord.com/developers/applications)
+- Lancer le super code bien écrit qui marche super bien
+
 # Exemple
 https://x.com/unicouniuni3/status/1902707885458460871 ou https://twitter.com/unicouniuni3/status/1902707885458460871 
 
