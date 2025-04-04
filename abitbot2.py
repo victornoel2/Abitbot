@@ -80,6 +80,13 @@ async def historique(interaction: discord.Interaction, nombre: int = 15):
     await interaction.followup.send("Analyse terminée.", ephemeral=True)
     await interaction.delete_original_response()
 
+@bot.tree.command(name="shutdown", description="Ferme le bot")
+@commands.has_role('admin')
+async def shutdown(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Ok je m'en vais..",
+                                            ephemeral=True)
+    await bot.close()
+
 
 # Analyse les 15 derniers messages et les traite
 async def analyze_last_messages_in_general(limite=limit):
@@ -104,10 +111,10 @@ async def analyze_last_messages_in_general(limite=limit):
 async def replace_urls_in_message(message):
     # global envoye
     # if envoye == 0 :
-    # envoye = 1
+    #     envoye = 1
     # else :
-    # envoye = 0
-    # return
+    #     envoye = 0
+    #     return
 
     # Rechercher les URLs x.com dans le message
 
@@ -121,6 +128,11 @@ async def replace_urls_in_message(message):
     # Extraire le mot-clé (nom du canal) s'il est spécifié
     keyword_match = re.findall(r' ([\w-]+)$', modified_message)
     modified_message = re.sub(r' [\w-]+$', '', modified_message)  # Supprimer le mot-clé du message
+
+    # On annule l'opération 
+    for keyword in keyword_match :
+        if keyword.lower() == 'stop' :
+            return 
 
     if urls:
         a_traiter = 1
