@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import json
 try:
     import discord
 except ModuleNotFoundError:
@@ -27,10 +28,10 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 if not TOKEN:
     raise ValueError("Le token Discord est manquant. Ajoutez-le dans un fichier .env")
 
-intents = discord.Intents.all()
-intents.messages = True
+intents = discord.Intents.default()
+intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents, max_messages=1000)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 channelGeneral = 0
 
@@ -38,15 +39,25 @@ envoye = 0
 
 limit = 15
 
-
 # Au lancement du bot
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user}')
     for guild in bot.guilds:
         await setChannelGeneral(guild.system_channel)
+        print(f'Le channel général est {guild.system_channel}')
 
     await load_recent_messages()
+    print(f'1000 derniers messages chargés')
+
+    with open('data.json') as f:
+        data = json.load(f)
+    
+    if data['analyseLancement'] :
+        print(f'Analyse des {limit} derniers messages..')
+        await analyze_last_messages_in_general(limit)
+        print(f'Fin de l\'analyse')
+    
     await bot.tree.sync()
 
 
@@ -60,7 +71,13 @@ async def setChannelGeneral(channel):
 async def on_message(message):
     if message.author == bot.user:
         return
+    
+    # permet de traiter le message normalement malgré l'override
+    await bot.process_commands(message)
+
+    # traitement de l'url
     await replace_urls_in_message(message)
+    
 
 
 # Effectue la modification lorsqu'un message est modifié
@@ -71,9 +88,13 @@ async def on_message_edit(before, after):
     await replace_urls_in_message(after)
 
 
+# --------------------------------------
+#           COMMANDES
+# --------------------------------------
+
 @bot.tree.command(name="historique", description="Traite les derniers messages du serveur")
-@app_commands.describe(nombre="Nombre de messages à analyser (par défaut 15)")
-async def historique(interaction: discord.Interaction, nombre: int = 15):
+@app_commands.describe(nombre='Nombre de messages à analyser (par défaut ' + str(limit) + ')')
+async def historique(interaction: discord.Interaction, nombre: int = limit):
     await interaction.response.send_message(f"Analyse des {nombre} derniers messages dans le canal général en cours...",
                                             ephemeral=True)
     await analyze_last_messages_in_general(nombre)
@@ -81,11 +102,49 @@ async def historique(interaction: discord.Interaction, nombre: int = 15):
     await interaction.delete_original_response()
 
 @bot.tree.command(name="shutdown", description="Ferme le bot")
-@commands.has_role('admin')
+@commands.has_permissions(administrator=True)
 async def shutdown(interaction: discord.Interaction):
     await interaction.response.send_message(f"Ok je m'en vais..",
                                             ephemeral=True)
     await bot.close()
+
+@bot.command()
+# @commands.has_permissions(administrator=True)
+@commands.has_role('admin')
+async def analyseLancement(ctx):
+    with open('data.json') as f:
+        data = json.load(f)
+    
+    data['analyseLancement'] = not data['analyseLancement']
+
+    with open('data.json', 'w') as f:
+        json.dump(data,f)
+
+    
+    msg = f"L\'analyse au lancement du bot est maintenant "
+    if data['analyseLancement'] :
+        msg += "activée"
+    else:
+        msg += "désactivée"
+    await ctx.message.delete()
+
+    await ctx.send(msg, delete_after=5)
+
+
+# --------------------------------------
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send("Tu dois avoir le rôle `admin` pour utiliser cette commande.", delete_after=5)
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("Tu dois avoir la permission `Administrateur` pour faire ça.", delete_after=5)
+    elif isinstance(error, commands.NotOwner):
+        await ctx.send("Seul le propriétaire du bot peut utiliser cette commande.", delete_after=5)
+    else:
+        # Optionnel : affiche les autres erreurs pour débug
+        await ctx.send(f"Une erreur est survenue : {str(error)}")
 
 
 # Analyse les 15 derniers messages et les traite
@@ -106,6 +165,7 @@ async def analyze_last_messages_in_general(limite=limit):
                 print(f"Forbidden: Cannot read message history in channel {general_channel.name}")
             except discord.HTTPException as e:
                 print(f"HTTPException: {e}")
+
 
 
 async def replace_urls_in_message(message):
@@ -129,17 +189,19 @@ async def replace_urls_in_message(message):
     keyword_match = re.findall(r' ([\w-]+)$', modified_message)
     modified_message = re.sub(r' [\w-]+$', '', modified_message)  # Supprimer le mot-clé du message
 
-    # On annule l'opération 
+    # On annule l'opération si on trouve le mot clé stop
     for keyword in keyword_match :
         if keyword.lower() == 'stop' :
             return 
 
+    # Si on trouve une url dans le message
     if urls:
         a_traiter = 1
         for url in urls:
             new_url = url.replace('twitter.com', 'vxtwitter.com').replace('x.com', 'vxtwitter.com')
             modified_message = modified_message.replace(url, new_url)
 
+    # si on trouve un nom de channel dans le message
     if keyword_match:
         a_traiter = 1
         keyword = keyword_match[0]
