@@ -1,6 +1,6 @@
 # Abitbot
 
-Bot discord permettant de changer l'URL twitter envoyée en une URL avec la bonne intégration discord. J'en avais marre de devoir modifier les url à la main dans mon serveur privé où j'envoie différentes ressources de différentes catégories.
+Bot discord permettant de changer l'URL twitter envoyée en une URL avec la bonne intégration discord. J'en avais marre de devoir modifier les url à la main dans mon serveur privé où j'envoie différentes ressources de différentes catégories. Tapez !aled pour en savoir plus.
 
 # Installation
 

@@ -43,9 +43,11 @@ limit = 15
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user}')
+    await bot.change_presence(activity=discord.Game(name=" taper !aled"))
+
     for guild in bot.guilds:
         await setChannelGeneral(guild.system_channel)
-        print(f'Le channel général est {guild.system_channel}')
+        print(f'Le channel général est #{guild.system_channel}')
 
     await load_recent_messages()
     print(f'1000 derniers messages chargés')
@@ -104,13 +106,12 @@ async def historique(interaction: discord.Interaction, nombre: int = limit):
 @bot.tree.command(name="shutdown", description="Ferme le bot")
 @commands.has_permissions(administrator=True)
 async def shutdown(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Ok je m'en vais..",
+    await interaction.response.send_message(f"Le train de tes injures roule sur le rail de mon indifférence. Je préfère partir plutôt que d'entendre ça plutôt que d'être sourd.",
                                             ephemeral=True)
     await bot.close()
 
 @bot.command()
-# @commands.has_permissions(administrator=True)
-@commands.has_role('admin')
+@commands.has_permissions(administrator=True)
 async def analyseLancement(ctx):
     with open('data.json') as f:
         data = json.load(f)
@@ -131,6 +132,29 @@ async def analyseLancement(ctx):
     await ctx.send(msg, delete_after=5)
 
 
+@bot.command(name="aled")
+async def help(ctx):
+    embed = discord.Embed(
+        title="Aled je comprends rien il fait quoi le bot",
+        description=(
+            "Sur mon front il y a pas marqué radio-réveil.. Bon je veux bien t'expliquer :\n\n"
+            "Je suis un bot qui te permet de traiter un lien twitter qui est envoyé sur serveur pour appliquer une meilleure intégration pour Discord. "
+            "Au contraire si tu préfères que je ne fasse pas ce traitement, ajoute **stop** après le lien.\n\n"
+            "Si tu veux également que j'envoie ton message sur un autre channel je peux le faire ! Il suffit d'indiquer le nom du channel dans ton message après ton lien.\n\n"
+        
+            "Voilà cela explique grossièrement ma mission principale, tu peux cependant jeter un coup d'oeil aux quelques fonctionnalités additionnelles dont je dispose, aller soit pas timide :\n"
+        ),
+        color=discord.Color.blurple()
+    )
+
+    embed.add_field(name="`!analyseLancement`", value="Active ou désactive le traitement des 15 derniers messages quand je me lance (**désactivé par défaut**)", inline=True)
+    embed.add_field(name="`/historique` nombreMessages", value="Fait le traitement des derniers messages (15 par défaut) du channel général, tu peux indiquer un nombre spécifique si tu veux je ne te force pas.", inline=False)
+    embed.add_field(name="`/shutdown`", value="Permet à un administrateur de m'éteindre, même si c'est pas super sympa.", inline=False)
+    embed.add_field(name="`!aide`", value="Affiche ce message d'aide.", inline=False)
+
+    embed.set_footer(text=f"Demandé par {ctx.author}", icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+
+    await ctx.send(embed=embed)
 # --------------------------------------
 
 
